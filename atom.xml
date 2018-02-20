@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>gkiwi</title>
+  
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://gkiwi.com/"/>
+  <updated>2018-02-20T07:37:27.000Z</updated>
+  <id>http://gkiwi.com/</id>
+  
+  <author>
+    <name>gkiwi</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>起始篇：守望者 与 Kurt</title>
+    <link href="http://gkiwi.com/2018/02/19/%E5%AE%88%E6%9C%9B%E8%80%85/"/>
+    <id>http://gkiwi.com/2018/02/19/守望者/</id>
+    <published>2018-02-19T14:51:49.000Z</published>
+    <updated>2018-02-20T07:37:27.000Z</updated>
+    
+    <content type="html"><![CDATA[<script src="/assets/js/APlayer.min.js"> </script><p>像每个程序员一样，折腾了多个博客，但是也都是不了了之，因为没啥干货可写。</p><p>但是对于电影、音乐的热爱却与日俱增，想着我这伪前端也该搞点事情。</p><p>先奉上最近超喜欢的一首，Kurt的<code>Lake Of Fire</code>。</p><div id="aplayer0" class="aplayer" style="margin-bottom: 20px;"></div><script>var ap = new APlayer({element: document.getElementById("aplayer0"),narrow: false,autoplay: false,showlrc: 0,music: {title: "Lake Of Fire",author: "Nirvana",url: "/music/lake-of-fire/index.mp3",pic: "/music/lake-of-fire/index.jpg",}});window.aplayers || (window.aplayers = []);window.aplayers.push(ap);</script><p>最近，我总是想如果在『守望者』里选一个自己最像的人，可能就是笑匠了。</p><p><img src="/images/watchmen-comedian.jpg" alt=""></p><p>关于<a href="https://www.mmfen.com/archives/22957" target="_blank" rel="noopener">这个笑脸的设计历程</a>，说法大概是</p><blockquote><p>我们知道笑匠参加过战争，具有浓厚的军方背景，因此在设计之初吉布斯笔下的笑匠浑身上下到处都是迷彩伪装以求突出其经历，结果初稿完成后吉布斯发现在画面里很难找到笑匠，他的制服隐蔽性太好了，连读者都会被骗过……</p></blockquote><p>然后就有了这个标志性极强的笑脸。</p><p>考虑到这个博客后续电影和音乐会比代码多，所以准备</p><ul><li style="list-style: none"><input type="checkbox"> 弄一套蒸汽朋克的主题</li></ul><p>想必会比较有意思。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;script src=&quot;/assets/js/APlayer.min.js&quot;&gt; &lt;/script&gt;&lt;p&gt;像每个程序员一样，折腾了多个博客，但是也都是不了了之，因为没啥干货可写。&lt;/p&gt;
+&lt;p&gt;但是对于电影、音乐的热爱却与日俱增，想着我这伪前端也该搞点事情。&lt;/p&gt;
+&lt;p&gt;先奉上
+      
+    
+    </summary>
+    
+      <category term="movie" scheme="http://gkiwi.com/categories/movie/"/>
+    
+    
+  </entry>
+  
+</feed>
