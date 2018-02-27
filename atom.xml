@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://gkiwi.com/"/>
-  <updated>2018-02-20T07:37:27.000Z</updated>
+  <updated>2018-02-27T17:29:43.000Z</updated>
   <id>http://gkiwi.com/</id>
   
   <author>
@@ -15,6 +15,28 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Mac命令行合并硬盘</title>
+    <link href="http://gkiwi.com/2018/02/28/Mac%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%90%88%E5%B9%B6%E7%A1%AC%E7%9B%98/"/>
+    <id>http://gkiwi.com/2018/02/28/Mac命令行合并硬盘/</id>
+    <published>2018-02-27T16:55:27.000Z</published>
+    <updated>2018-02-27T17:29:43.000Z</updated>
+    
+    <content type="html"><![CDATA[<script src="/assets/js/APlayer.min.js"> </script><p>Mac 256G硬盘，之前拆了50给了win10，结果呢主满了，就想着把这 50G 给合进去。</p><p>最初简单的打算通过<code>磁盘工具</code>操作一下，但是总爆出：分片太小/分片检查各种问题。先看现在的分片</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// sudo diskutil list</span><br><span class="line"></span><br><span class="line">/dev/disk0 (internal, physical):</span><br><span class="line">   #:                       TYPE NAME                    SIZE       IDENTIFIER</span><br><span class="line">   0:      GUID_partition_scheme                        *251.0 GB   disk0</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk0s1</span><br><span class="line">   2:                  Apple_HFS Macintosh HD            200.1 GB   disk0s2</span><br><span class="line">   3:                 Apple_Boot Recovery HD             650.0 MB   disk0s3</span><br><span class="line">   4:                  Apple_HFS                         16.8 MB    disk0s4</span><br><span class="line">   5:                  Apple_HFS win7                    49.4 GB    disk0s5</span><br><span class="line">   6:           Windows Recovery                         483.4 MB   disk0s6</span><br></pre></td></tr></table></figure><p>其中 <code>disk0s4</code>, <code>disk0s5</code>, <code>disk0s6</code> 是松散的分区，需要和入<code>disk0s2</code>分区。</p><p>首先是分区<code>格式化</code>，上面list是已经格式化过的，使用如下命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">diskutil eraseVolume HFS+J win8 /dev/disk0s4</span><br><span class="line">diskutil eraseVolume HFS+J win8 /dev/disk0s5</span><br><span class="line">diskutil eraseVolume HFS+J win8 /dev/disk0s6</span><br></pre></td></tr></table></figure><p>此处注意格式化为：<code>HFS+J</code>，为<code>Mac OS 扩展（日志式）</code>，和主文件格式一样。</p><p>然后将<code>disk0s4</code> 和 <code>disk0s5</code> 合在一起（如果使用<code>磁盘工具</code>和入的话，<code>dusk0s4</code>只有16M，太小了，会直接报异常）</p><p>注意此时会格式化两块分片。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">diskutil mergePartitions HFS+J win7 disk0s4 disk0s5</span><br></pre></td></tr></table></figure><p>然后通过<code>磁盘工具</code>，将更新的<code>disk04</code> 通过<code>分区</code>合入到主分区上。</p><hr><p>说点不好的，忘记合入<code>disk0s6</code>，此时通过<code>磁盘工具</code> 无法合入（分片太小），但是通过<code>diskutil mergePartitions</code>的话，应该会格式化主磁盘，索性比较小，就先放了吧。</p><hr><p>在看『老炮儿』，老规矩也好，新规矩也好，一旦定了，那就得按这个来。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;script src=&quot;/assets/js/APlayer.min.js&quot;&gt; &lt;/script&gt;&lt;p&gt;Mac 256G硬盘，之前拆了50给了win10，结果呢主满了，就想着把这 50G 给合进去。&lt;/p&gt;
+&lt;p&gt;最初简单的打算通过&lt;code&gt;磁盘工具&lt;/code&gt;操作一下，但
+      
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>起始篇：守望者 与 Kurt</title>
