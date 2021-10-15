@@ -52,7 +52,8 @@
         }
         let r = kk.some(k => d[i][j] != d[i][j+k]) // 竖
         && kk.some(k => d[i][j] != d[i+k][j]) // 横
-        && kk.some(k => d[i][j] != d[i+k][j+k]); // 斜
+        && kk.some(k => d[i][j] != d[i+k][j+k]) // 右下斜(左上斜)
+        && kk.some(k => d[i][j] != d[i+k][j-k]); // 右上斜(左下斜)
         if (!r) {
           return d[i][j];
         }
