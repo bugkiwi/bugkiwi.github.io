@@ -1,0 +1,85 @@
+<canvas id="m" width="570" height="570"></canvas>
+<script>
+  // dc - document
+  // c - canvas
+  var dc = document;
+  var c = dc.getElementById('m').getContext('2d');
+  //定义棋盘大小
+  //x,y 坐标
+  //m 棋子大小
+  //cl 颜色
+  //i,j 子琪位置
+  //t 10，常量，出现位置太多了
+  //kk 遍历五子棋长度
+  //d 所有棋盘 0：未下；1：下红棋；2：下黑棋
+  var m = 25,x=y=i=j=0,cl='#000',l=23, kk = [1,2,3,4], t=10, d;
+  d = new Array(l);
+  for (var i = 0; i < l; i++) {
+    d[i] = new Int8Array(l);
+  }
+  //绘制棋盘
+  for (i = 0; i < l; i++) {
+    c.moveTo(t, t + i * m);
+    c.lineTo(560, t + i * m);
+    c.moveTo(t + i * m, t);
+    c.lineTo(t + i * m, 560);
+    c.stroke();
+  }
+  //创建函数，完成下棋
+  addChess = (x, y) => {
+    //下棋 画小圆圈   角度转弧度 π/180×角度    弧度变角度 180/π×弧度
+    c.beginPath();//开始
+    c.arc(x, y, 12, 0, Math.PI * 2, true); //画棋子
+    c.fillStyle = cl;
+    c.fill();
+    c.closePath();//结束
+    if (cl == "#000") {
+      cl = 'red';
+      //黑棋
+      d[i][j] = 2;
+    } else {
+      cl = "#000";
+      //红棋
+      d[i][j] = 1;
+    }
+  }
+  
+  getWiner = () => {
+    for (var i = 0; i < l; i++) {
+      for (var j = 0; j < l; j++) {
+        if (d[i][j] == 0) {
+            continue;
+        }
+        let r = kk.some(k => d[i][j] != d[i][j+k]) // 竖
+        && kk.some(k => d[i][j] != d[i+k][j]) // 横
+        && kk.some(k => d[i][j] != d[i+k][j+k]); // 斜
+        if (!r) {
+          return d[i][j];
+        }
+      }
+    }
+  }
+
+  //做鼠标监听游戏逻辑
+  dc.onmousedown = e => {
+    window.onclick = _ => {
+      f = p => Math.round((p - t) / m)
+      //获取下棋的坐标
+      i = f(e.x);
+      j = f(e.y) // 边界不能下
+      //判断该位置x，y是否可以下棋
+      x = i * m + t;
+      y = j * m + t;
+
+      //判断该位置ij是否有棋子
+      if (d[i][j] == 0) {
+        //下棋
+        addChess(x, y);
+        var r = getWiner()
+        r && setTimeout(() => alert(r==1?'红赢':'黑赢'));
+      } else {
+        alert("非空位");
+      }
+    }
+  }
+</script>
