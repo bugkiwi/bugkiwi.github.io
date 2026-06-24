@@ -1,0 +1,42 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const siteTitle = 'gkiwi';
+const fullTitle = title ? `${title} · ${siteTitle}` : siteTitle;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="gkiwi" />
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/images/favicon.png" />
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="site-header">
+        <a href="/" class="site-title">gkiwi</a>
+        <nav class="site-nav">
+          <a href="/">首页</a>
+        </nav>
+      </header>
+
+      <main>
+        <slot />
+      </main>
+
+      <footer class="site-footer">
+        <p>© {new Date().getFullYear()} gkiwi · Built with Astro</p>
+      </footer>
+    </div>
+  </body>
+</html>
