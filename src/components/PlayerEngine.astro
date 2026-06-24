@@ -1,0 +1,102 @@
+---
+// 持久化音频引擎：放在 body 根部稳定位置，不可见。
+// 负责真正的播放与状态，跨导航不中断；UI 由 header 里的 PlayerWidget 渲染。
+---
+
+<global-audio transition:persist="global-audio" hidden>
+  <audio class="gp-audio"></audio>
+</global-audio>
+
+<script>
+  const KEY = 'gp-track';
+  let engine = null; // 单例
+
+  class GlobalAudio extends HTMLElement {
+    connectedCallback() {
+      if (engine && engine !== this) {
+        if (engine.isConnected) {
+          this.remove();
+          return;
+        }
+      }
+      engine = this;
+      if (this.dataset.ready) return;
+      this.dataset.ready = '1';
+
+      this.audio = this.querySelector('.gp-audio');
+      this.track = null;
+
+      this.audio.addEventListener('play', () => this.broadcast());
+      this.audio.addEventListener('pause', () => this.broadcast());
+      this.audio.addEventListener('timeupdate', () => this.save());
+
+      const saved = sessionStorage.getItem(KEY);
+      if (saved) {
+        try {
+          const t = JSON.parse(saved);
+          this.set(t, false); // 硬刷新后恢复但不自动播放（浏览器策略）
+          this.audio.addEventListener(
+            'loadedmetadata',
+            () => {
+              if (t.time) this.audio.currentTime = t.time;
+            },
+            { once: true }
+          );
+        } catch {}
+      }
+    }
+
+    set(t, autoplay) {
+      this.track = t;
+      const same = !!this.audio.src && this.audio.src.endsWith(t.src);
+      if (!same) this.audio.src = t.src;
+      this.save();
+      // 点击卡片即播放：同曲也要播（关闭后再点能重新响），失败静默
+      if (autoplay) this.audio.play().catch(() => {});
+      this.broadcast();
+    }
+
+    toggle() {
+      if (!this.track) return;
+      if (this.audio.paused) this.audio.play().catch(() => {});
+      else this.audio.pause();
+    }
+
+    close() {
+      this.audio.pause();
+      try {
+        this.audio.currentTime = 0; // 归零，下次重新打开从头播
+      } catch {}
+      this.track = null;
+      sessionStorage.removeItem(KEY);
+      this.broadcast();
+    }
+
+    save() {
+      if (!this.track) return;
+      sessionStorage.setItem(KEY, JSON.stringify({ ...this.track, time: this.audio.currentTime }));
+    }
+
+    snapshot() {
+      return { active: !!this.track, playing: !this.audio.paused, track: this.track };
+    }
+
+    broadcast() {
+      document.dispatchEvent(new CustomEvent('gp:state', { detail: this.snapshot() }));
+    }
+  }
+
+  // 全站只绑定一次的控制通道
+  if (!window.__gpEngineBound) {
+    window.__gpEngineBound = true;
+    document.addEventListener('player:load', (e) => engine && engine.set(e.detail, true));
+    document.addEventListener('gp:toggle', () => engine && engine.toggle());
+    document.addEventListener('gp:close', () => engine && engine.close());
+    window.__gpState = () =>
+      engine ? engine.snapshot() : { active: false, playing: false, track: null };
+  }
+
+  if (!customElements.get('global-audio')) {
+    customElements.define('global-audio', GlobalAudio);
+  }
+</script>
