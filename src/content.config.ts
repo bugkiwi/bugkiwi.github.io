@@ -10,6 +10,8 @@ const blog = defineCollection({
     description: z.string().optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
+    // 可选：指定干净的英文短链（分享友好）。不填则用文件名。
+    slug: z.string().optional(),
   }),
 });
 

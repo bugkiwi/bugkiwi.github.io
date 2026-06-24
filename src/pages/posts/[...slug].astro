@@ -5,7 +5,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
   return posts.map((post) => ({
-    params: { id: post.id },
+    // 优先用 frontmatter 里的 slug，否则回退到文件名
+    params: { slug: post.data.slug ?? post.id },
     props: { post },
   }));
 }

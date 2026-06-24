@@ -1,5 +1,8 @@
 ---
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import PlayerWidget from '../components/PlayerWidget.astro';
+import PlayerEngine from '../components/PlayerEngine.astro';
 
 interface Props {
   title?: string;
@@ -20,23 +23,101 @@ const fullTitle = title ? `${title} · ${siteTitle}` : siteTitle;
     {description && <meta name="description" content={description} />}
     <link rel="icon" href="/images/favicon.png" />
     <title>{fullTitle}</title>
+
+    <!-- 客户端路由：文章间软切换，让全局播放器持续播放 -->
+    <ClientRouter />
+
+    <!-- 西部木刻招牌体 Rye + 打字机体 Special Elite -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- 防止暗色模式闪烁：在渲染前先设定主题 -->
+    <script is:inline>
+      const stored = localStorage.getItem('theme');
+      const dark =
+        stored === 'dark' ||
+        (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    </script>
   </head>
   <body>
-    <div class="wrap">
-      <header class="site-header">
-        <a href="/" class="site-title">gkiwi</a>
-        <nav class="site-nav">
-          <a href="/">首页</a>
-        </nav>
-      </header>
+    <header class="site-header">
+      <a href="/" class="brand" aria-label="gkiwi 首页">
+        <!-- 仙人掌 + 警长星徽 -->
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <path
+            d="M24 44V22M24 22V14a5 5 0 0 0-5-5h-1a3 3 0 0 0-3 3v3a4 4 0 0 0 4 4h5Zm0 4v-6a5 5 0 0 1 5-5h1a3 3 0 0 1 3 3v2a4 4 0 0 1-4 4h-5Z"
+            stroke="var(--accent-2)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="m13 4 1.3 2.6L17 7l-2 1.9.5 2.9L13 10.4 10.5 11.8 11 8.9 9 7l2.7-.4L13 4Z"
+            fill="var(--accent)"
+          />
+        </svg>
+        <span class="site-title">gkiwi</span>
+      </a>
 
-      <main>
-        <slot />
-      </main>
+      <nav class="site-nav">
+        <a href="/">首页</a>
+      </nav>
 
-      <footer class="site-footer">
-        <p>© {new Date().getFullYear()} gkiwi · Built with Astro</p>
-      </footer>
-    </div>
+      <PlayerWidget />
+
+      <button
+        class="theme-toggle"
+        id="theme-toggle"
+        type="button"
+        aria-label="切换明暗主题"
+        title="切换明暗主题"
+      >
+        <span data-light>☀️</span>
+        <span data-dark hidden>🌙</span>
+      </button>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        <span class="horseshoe">✦</span> © {new Date().getFullYear()} gkiwi · Howdy
+        partner, built with Astro <span class="horseshoe">✦</span>
+      </p>
+    </footer>
+
+    <!-- 持久化音频引擎（不可见，放 body 根部保证跨导航不中断、不错位） -->
+    <PlayerEngine />
+
+    <script is:inline>
+      // astro:page-load 在首次加载和每次软导航后都会触发，
+      // 因此换页后按钮（被重建）也能重新绑定。
+      document.addEventListener('astro:page-load', () => {
+        const btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        const sun = btn.querySelector('[data-light]');
+        const moon = btn.querySelector('[data-dark]');
+        const sync = () => {
+          const dark = document.documentElement.dataset.theme === 'dark';
+          sun.hidden = dark;
+          moon.hidden = !dark;
+        };
+        sync();
+        btn.addEventListener('click', () => {
+          const dark = document.documentElement.dataset.theme === 'dark';
+          const next = dark ? 'light' : 'dark';
+          document.documentElement.dataset.theme = next;
+          localStorage.setItem('theme', next);
+          sync();
+        });
+      });
+    </script>
   </body>
 </html>

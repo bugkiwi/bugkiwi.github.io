@@ -1,0 +1,67 @@
+---
+// 播放器控制 UI：放在 header 里（与主题切换并排），每次导航重新渲染并同步引擎状态。
+// 不持久化、不漂浮；真正的音频在 PlayerEngine 里持续播放。
+---
+
+<div class="global-player" hidden tabindex="0">
+  <button class="gp-cover-btn" type="button" aria-label="播放 / 暂停">
+    <img class="gp-cover" alt="" />
+  </button>
+  <div class="gp-panel">
+    <button class="gp-toggle" type="button" aria-label="播放 / 暂停">▶</button>
+    <div class="gp-info">
+      <strong class="gp-title"></strong>
+      <span class="gp-author"></span>
+    </div>
+    <a class="gp-source" href="/">来自原文</a>
+    <button class="gp-close" type="button" aria-label="关闭播放器">✕</button>
+  </div>
+</div>
+
+<script>
+  function render() {
+    const el = document.querySelector('.global-player');
+    if (!el) return;
+    const s = window.__gpState
+      ? window.__gpState()
+      : { active: false, playing: false, track: null };
+
+    if (!s.active || !s.track) {
+      el.hidden = true;
+      el.removeAttribute('data-playing');
+      return;
+    }
+    const t = s.track;
+    el.hidden = false;
+    el.querySelector('.gp-cover').src = t.cover || '';
+    el.querySelector('.gp-title').textContent = t.title || '';
+    el.querySelector('.gp-author').textContent = t.author || '';
+    const src = el.querySelector('.gp-source');
+    src.textContent = t.sourceTitle ? `来自《${t.sourceTitle}》` : '';
+    src.href = t.sourceUrl || '/';
+    src.style.display = t.sourceUrl ? '' : 'none';
+    el.querySelector('.gp-toggle').textContent = s.playing ? '❚❚' : '▶';
+    el.toggleAttribute('data-playing', s.playing);
+  }
+
+  function bind() {
+    const el = document.querySelector('.global-player');
+    if (!el) return;
+    if (!el.dataset.bound) {
+      el.dataset.bound = '1';
+      const fire = (name) => document.dispatchEvent(new CustomEvent(name));
+      el.querySelector('.gp-cover-btn').addEventListener('click', () => fire('gp:toggle'));
+      el.querySelector('.gp-toggle').addEventListener('click', () => fire('gp:toggle'));
+      el.querySelector('.gp-close').addEventListener('click', () => fire('gp:close'));
+    }
+    render();
+  }
+
+  // 状态变化时同步 UI（只绑一次；render 总是查询当前 DOM）
+  if (!window.__gpWidgetBound) {
+    window.__gpWidgetBound = true;
+    document.addEventListener('gp:state', render);
+  }
+  // 每次导航后（header 被重建）重新绑定并渲染
+  document.addEventListener('astro:page-load', bind);
+</script>

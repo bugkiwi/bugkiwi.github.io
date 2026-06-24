@@ -12,12 +12,18 @@ const fmt = (d: Date) =>
   ).padStart(2, '0')}`;
 ---
 
-<BaseLayout description="gkiwi 的博客">
+<BaseLayout description="gkiwi 的博客 —— 电影、音乐、代码与一点毒言">
+  <p class="tagline">Welcome to the frontier, partner.</p>
+  <p class="intro">
+    一个程序员的自留地，聊聊电影、音乐、代码，偶尔也写点西部荒野上的胡话。
+  </p>
+
+  <h2 class="section-label">— 文章 · Trail Log —</h2>
   <ul class="post-list">
     {
       posts.map((post) => (
         <li>
-          <a href={`/posts/${post.id}/`}>{post.data.title}</a>
+          <a href={`/posts/${post.data.slug ?? post.id}/`}>{post.data.title}</a>
           <span class="date">{fmt(post.data.date)}</span>
         </li>
       ))

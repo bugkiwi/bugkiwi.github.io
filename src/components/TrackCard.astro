@@ -1,0 +1,54 @@
+---
+// 文章内的音乐卡片：点击后把这首歌送进全局播放器并播放
+interface Props {
+  title: string;
+  author: string;
+  src: string;
+  cover?: string;
+}
+const { title, author, src, cover } = Astro.props;
+---
+
+<track-card
+  class="track-card"
+  data-title={title}
+  data-author={author}
+  data-src={src}
+  data-cover={cover ?? ''}
+>
+  {cover && <img class="track-card__cover" src={cover} alt={title} />}
+  <div class="track-card__meta">
+    <strong>{title}</strong>
+    <span>{author}</span>
+  </div>
+  <button class="track-card__btn" type="button">▶ 在播放器中播放</button>
+</track-card>
+
+<script>
+  class TrackCard extends HTMLElement {
+    connectedCallback() {
+      const btn = this.querySelector('.track-card__btn');
+      btn?.addEventListener('click', () => {
+        document.dispatchEvent(
+          new CustomEvent('player:load', {
+            detail: {
+              title: this.dataset.title,
+              author: this.dataset.author,
+              src: this.dataset.src,
+              cover: this.dataset.cover,
+              // 触发音乐的文章：当前页地址 + 标题
+              sourceUrl: location.pathname,
+              sourceTitle:
+                document.querySelector('article h1')?.textContent?.trim() ||
+                document.title,
+            },
+          })
+        );
+      });
+    }
+  }
+
+  if (!customElements.get('track-card')) {
+    customElements.define('track-card', TrackCard);
+  }
+</script>
