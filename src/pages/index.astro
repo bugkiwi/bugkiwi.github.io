@@ -23,7 +23,9 @@ const fmt = (d: Date) =>
     {
       posts.map((post) => (
         <li>
-          <a href={`/posts/${post.data.slug ?? post.id}/`}>{post.data.title}</a>
+          <a href={`/posts/${post.data.slug ?? post.id}/`} data-astro-reload>
+            {post.data.title}
+          </a>
           <span class="date">{fmt(post.data.date)}</span>
         </li>
       ))
