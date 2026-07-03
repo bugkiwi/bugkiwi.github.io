@@ -4,6 +4,6 @@ import react from '@astrojs/react';
 
 // https://astro.build
 export default defineConfig({
-  site: 'https://bugkiwi.github.io',
+  site: 'https://gkiwi.dev',
   integrations: [mdx(), react()],
 });

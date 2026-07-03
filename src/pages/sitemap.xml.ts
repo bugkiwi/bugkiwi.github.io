@@ -27,7 +27,7 @@ const renderUrl = ({ loc, lastmod, priority }: SitemapEntry) => {
 };
 
 export const GET: APIRoute = async ({ site }) => {
-  const baseUrl = site?.toString() ?? 'https://bugkiwi.github.io/';
+  const baseUrl = site?.toString() ?? 'https://gkiwi.dev/';
   const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
     (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
   );
