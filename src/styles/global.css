@@ -235,6 +235,33 @@ article img {
   border: 1px solid var(--border);
 }
 
+article figure {
+  margin: 28px 0;
+}
+
+article figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+article figure.figure--inline img {
+  width: auto;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+article figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
 article hr {
   border: none;
   height: 14px;
@@ -290,6 +317,104 @@ article ul {
 article ul li::marker {
   content: "✦ ";
   color: var(--accent-2);
+}
+
+/* ---------- Markdown 表格 ---------- */
+article .table-wrap {
+  margin: 28px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--fg) 4%, transparent),
+    0 2px 10px color-mix(in srgb, var(--fg) 5%, transparent);
+}
+
+article table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+article th,
+article td {
+  padding: 13px 18px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+}
+
+article th {
+  background: color-mix(in srgb, var(--accent-2) 14%, var(--bg-soft));
+  color: var(--accent-2);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--border);
+}
+
+article td {
+  color: var(--fg);
+}
+
+article tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--bg) 35%, var(--bg-soft));
+}
+
+article tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg-soft));
+}
+
+article tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Markdown 列对齐（---: / :---: / :---） */
+article th[align='right'],
+article td[align='right'],
+article th[style*='text-align: right'],
+article td[style*='text-align: right'],
+article th[style*='text-align:right'],
+article td[style*='text-align:right'] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+article th[align='center'],
+article td[align='center'],
+article th[style*='text-align: center'],
+article td[style*='text-align: center'],
+article th[style*='text-align:center'],
+article td[style*='text-align:center'] {
+  text-align: center;
+}
+
+article td:first-child {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--fg) 92%, var(--accent));
+}
+
+article th:first-child {
+  font-weight: 400;
+}
+
+@media (max-width: 640px) {
+  article th,
+  article td {
+    padding: 11px 14px;
+    font-size: 13px;
+  }
+
+  article table {
+    min-width: 440px;
+  }
 }
 
 /* ---------- Footer ---------- */
