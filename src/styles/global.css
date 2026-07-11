@@ -100,10 +100,11 @@ a:hover {
   color: var(--fg);
 }
 
-.brand svg {
+.brand img {
   width: 38px;
   height: 38px;
   flex: none;
+  object-fit: contain;
 }
 
 .site-title {
@@ -419,12 +420,27 @@ article th:first-child {
 
 /* ---------- Footer ---------- */
 .site-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   margin: 64px 0 32px;
   padding-top: 18px;
   border-top: 2px dashed var(--border);
   color: var(--muted);
   font-size: 13px;
   text-align: center;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+.site-avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
 }
 
 .site-footer .horseshoe {

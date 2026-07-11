@@ -13,12 +13,9 @@
 
   class GlobalAudio extends HTMLElement {
     connectedCallback() {
-      if (engine && engine !== this) {
-        if (engine.isConnected) {
-          this.remove();
-          return;
-        }
-      }
+      // 已有 persist 实例时，新页面里的副本交给 Astro 的 transition:persist 处理。
+      // 不能在这里 remove()——会在 swap 完成前删掉 newTarget，导致 moveBefore 报错、URL 不更新。
+      if (engine && engine !== this && engine.isConnected) return;
       engine = this;
       if (this.dataset.ready) return;
       this.dataset.ready = '1';
