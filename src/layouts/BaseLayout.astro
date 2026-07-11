@@ -97,26 +97,42 @@ const fullTitle = title ? `${title} · ${siteTitle}` : siteTitle;
     <PlayerEngine />
 
     <script is:inline>
-      // astro:page-load 在首次加载和每次软导航后都会触发，
-      // 因此换页后按钮（被重建）也能重新绑定。
-      document.addEventListener('astro:page-load', () => {
+      function applyStoredTheme() {
+        const stored = localStorage.getItem('theme');
+        const dark =
+          stored === 'dark' ||
+          (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      }
+
+      function syncThemeToggleIcons() {
         const btn = document.getElementById('theme-toggle');
         if (!btn) return;
         const sun = btn.querySelector('[data-light]');
         const moon = btn.querySelector('[data-dark]');
-        const sync = () => {
-          const dark = document.documentElement.dataset.theme === 'dark';
-          sun.hidden = dark;
-          moon.hidden = !dark;
-        };
-        sync();
+        const dark = document.documentElement.dataset.theme === 'dark';
+        sun.hidden = dark;
+        moon.hidden = !dark;
+      }
+
+      function bindThemeToggle() {
+        const btn = document.getElementById('theme-toggle');
+        if (!btn || btn.dataset.bound) return;
+        btn.dataset.bound = '1';
         btn.addEventListener('click', () => {
-          const dark = document.documentElement.dataset.theme === 'dark';
-          const next = dark ? 'light' : 'dark';
+          const isDark = document.documentElement.dataset.theme === 'dark';
+          const next = isDark ? 'light' : 'dark';
           document.documentElement.dataset.theme = next;
           localStorage.setItem('theme', next);
-          sync();
+          syncThemeToggleIcons();
         });
+      }
+
+      // 软导航会替换 html 属性，需在每次换页后从 localStorage 恢复主题。
+      document.addEventListener('astro:page-load', () => {
+        applyStoredTheme();
+        syncThemeToggleIcons();
+        bindThemeToggle();
       });
     </script>
   </body>
