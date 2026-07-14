@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1180" viewBox="0 0 1800 1180" role="img" aria-labelledby="title desc">
+  <title id="title">输入与输出媒体流的边界</title>
+  <desc id="desc">输入端展示 WebM 容器头、连续分片、最后尾块、预录和真实字节识别；输出端展示 SSE Base64 分片经过字符余量、PCM16 双字节对齐后进入连续播放队列。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker>
+    <style>
+      .title{font:700 42px 'Arial Unicode MS',sans-serif;fill:#0f172a}.sub{font:400 21px 'Arial Unicode MS',sans-serif;fill:#475569}
+      .h{font:700 25px 'Arial Unicode MS',sans-serif;fill:#0f172a}.p{font:400 18px 'Arial Unicode MS',sans-serif;fill:#334155}.small{font:400 16px 'Arial Unicode MS',sans-serif;fill:#475569}.white{fill:#fff}
+      .edge{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}.bad{stroke:#be123c;stroke-width:3;fill:none;stroke-dasharray:9 7}
+    </style>
+  </defs>
+  <rect width="1800" height="1180" fill="#f8fafc"/>
+  <text x="70" y="70" class="title">媒体流边界：字节顺序就是语义</text>
+  <text x="70" y="108" class="sub">输入端要保持容器连续；输出端要跨事件保持 Base64 与 PCM16 对齐</text>
+
+  <rect x="70" y="156" width="1660" height="448" rx="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="102" y="184" width="150" height="42" rx="21" fill="#0f766e"/><text x="177" y="212" text-anchor="middle" class="h white">输入端</text>
+  <text x="282" y="213" class="h">浏览器 MediaRecorder → 可解码 turn</text>
+
+  <rect x="112" y="272" width="230" height="88" rx="18" fill="#0f766e"/><text x="227" y="306" text-anchor="middle" class="h white">WebM 头</text><text x="227" y="336" text-anchor="middle" class="small white">通常只在首块</text>
+  <rect x="342" y="272" width="190" height="88" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/><text x="437" y="324" text-anchor="middle" class="p">100ms chunk</text>
+  <rect x="532" y="272" width="190" height="88" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/><text x="627" y="324" text-anchor="middle" class="p">100ms chunk</text>
+  <rect x="722" y="272" width="190" height="88" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/><text x="817" y="324" text-anchor="middle" class="p">预录 / 用户开头</text>
+  <rect x="912" y="272" width="190" height="88" rx="0 18 18 0" fill="#99f6e4" stroke="#0f766e" stroke-width="2"/><text x="1007" y="306" text-anchor="middle" class="p">最终尾块</text><text x="1007" y="336" text-anchor="middle" class="small">stop 后等待</text>
+  <path d="M1102 316 L1210 316" class="edge"/>
+  <rect x="1210" y="250" width="236" height="132" rx="20" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="1328" y="291" text-anchor="middle" class="h">检查真实字节</text>
+  <text x="1328" y="326" text-anchor="middle" class="p">WebM / WAV / MP3</text>
+  <text x="1328" y="355" text-anchor="middle" class="small">不要只信配置 encoding</text>
+  <path d="M1446 316 L1550 316" class="edge"/>
+  <rect x="1550" y="272" width="138" height="88" rx="18" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/><text x="1619" y="306" text-anchor="middle" class="p">ASR /</text><text x="1619" y="334" text-anchor="middle" class="p">Audio LLM</text>
+
+  <path d="M112 432 L1102 432" class="bad"/>
+  <text x="112" y="470" class="h" fill="#9f1239">三个会产生“看似模型问题”的错误</text>
+  <text x="112" y="508" class="p">① 丢掉首个容器头　② 保留首块却删除中间 WebM 结构　③ stop 后未等待最后 dataavailable / arrayBuffer</text>
+  <text x="112" y="546" class="small">后果可能是：有时长、有计费、Audio LLM 能回答，但字幕为空或 decodeAudioData 失败。</text>
+
+  <rect x="70" y="642" width="1660" height="454" rx="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="102" y="670" width="150" height="42" rx="21" fill="#7c3aed"/><text x="177" y="698" text-anchor="middle" class="h white">输出端</text>
+  <text x="282" y="699" class="h">Audio LLM SSE → 连续 PCM 播放</text>
+
+  <rect x="112" y="770" width="252" height="104" rx="20" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="238" y="808" text-anchor="middle" class="h">SSE event 1</text><text x="238" y="842" text-anchor="middle" class="small">Base64 长度未必 ÷ 4</text>
+  <rect x="408" y="770" width="252" height="104" rx="20" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="534" y="808" text-anchor="middle" class="h">SSE event 2</text><text x="534" y="842" text-anchor="middle" class="small">可能从上个字符继续</text>
+  <path d="M364 822 L408 822" class="edge"/>
+
+  <path d="M660 822 L748 822" class="edge"/>
+  <rect x="748" y="746" width="252" height="152" rx="20" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+  <text x="874" y="788" text-anchor="middle" class="h">增量解码器</text>
+  <text x="874" y="826" text-anchor="middle" class="p">保留 Base64 carry</text>
+  <text x="874" y="858" text-anchor="middle" class="p">保留 1 个奇数字节</text>
+
+  <path d="M1000 822 L1088 822" class="edge"/>
+  <rect x="1088" y="770" width="220" height="104" rx="20" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="1198" y="808" text-anchor="middle" class="h">PCM16 chunk</text><text x="1198" y="842" text-anchor="middle" class="small">完整双字节采样</text>
+
+  <path d="M1308 822 L1396 822" class="edge"/>
+  <rect x="1396" y="746" width="292" height="152" rx="20" fill="#ecfdf5" stroke="#0f766e" stroke-width="2"/>
+  <text x="1542" y="788" text-anchor="middle" class="h">AudioContext 队列</text>
+  <text x="1542" y="826" text-anchor="middle" class="p">首块到达即 startPcmStream</text>
+  <text x="1542" y="858" text-anchor="middle" class="small">后续分片沿同一时间轴排程</text>
+
+  <rect x="112" y="962" width="1576" height="82" rx="18" fill="#f1f5f9"/>
+  <text x="146" y="996" class="p">完整 WAV 仍可保留用于调试与回退，但不再成为首次播放的前置条件。</text>
+  <text x="146" y="1026" class="small">输入与输出的共同原则：事件边界不等于媒体边界，必须由真正理解格式的层保持连续性。</text>
+</svg>

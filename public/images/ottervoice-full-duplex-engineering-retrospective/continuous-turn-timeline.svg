@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="980" viewBox="0 0 1800 980" role="img" aria-labelledby="title desc">
+  <title id="title">全双工连续轮次时间线</title>
+  <desc id="desc">用户轮次 N 结束后，下一路录音立即开启，不等待 ASR 或模型。ASR final 只触发一次模型请求；若用户在 processing 阶段继续说话，旧请求会被取消。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker>
+    <style>
+      .title{font:700 42px 'Arial Unicode MS',sans-serif;fill:#0f172a}.sub{font:400 21px 'Arial Unicode MS',sans-serif;fill:#475569}
+      .lane{font:700 24px 'Arial Unicode MS',sans-serif;fill:#0f172a}.txt{font:400 18px 'Arial Unicode MS',sans-serif;fill:#334155}.small{font:400 16px 'Arial Unicode MS',sans-serif;fill:#475569}
+      .axis{stroke:#94a3b8;stroke-width:2}.dash{stroke:#cbd5e1;stroke-width:2;stroke-dasharray:8 8}.edge{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1800" height="980" fill="#f8fafc"/>
+  <text x="72" y="70" class="title">一次停顿之后，麦克风不能等待模型</text>
+  <text x="72" y="108" class="sub">关键不是并发越多越好，而是新 capture 的所有权先建立，旧 turn 再异步收口</text>
+
+  <line x1="250" y1="164" x2="1715" y2="164" class="axis" marker-end="url(#arrow)"/>
+  <text x="250" y="148" class="small">用户正在说话</text><text x="1595" y="148" class="small">时间 →</text>
+  <line x1="570" y1="150" x2="570" y2="874" class="dash"/>
+  <line x1="930" y1="150" x2="930" y2="874" class="dash"/>
+  <line x1="1280" y1="150" x2="1280" y2="874" class="dash"/>
+  <text x="570" y="190" text-anchor="middle" class="small">VAD speech_end</text>
+  <text x="930" y="190" text-anchor="middle" class="small">ASR final</text>
+  <text x="1280" y="190" text-anchor="middle" class="small">首个回复分片</text>
+
+  <text x="72" y="282" class="lane">麦克风</text>
+  <rect x="250" y="238" width="320" height="72" rx="18" fill="#0f766e"/><text x="410" y="282" text-anchor="middle" fill="#fff" class="lane">Capture N：用户语音</text>
+  <rect x="570" y="238" width="128" height="72" rx="18" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/><text x="634" y="270" text-anchor="middle" class="txt">等待尾块</text><text x="634" y="294" text-anchor="middle" class="small">封装 WebM</text>
+  <rect x="698" y="238" width="940" height="72" rx="18" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="1168" y="282" text-anchor="middle" class="lane">Capture N+1 已开启：processing 和播放期间持续收音</text>
+
+  <text x="72" y="420" class="lane">轮次 / ASR</text>
+  <rect x="250" y="372" width="320" height="78" rx="18" fill="#e2e8f0"/><text x="410" y="404" text-anchor="middle" class="txt">partial 原位更新</text><text x="410" y="430" text-anchor="middle" class="small">不结算、不发模型请求</text>
+  <rect x="570" y="372" width="360" height="78" rx="18" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="750" y="404" text-anchor="middle" class="txt">Capture N → processing</text><text x="750" y="430" text-anchor="middle" class="small">stop ASR，等待 final</text>
+  <rect x="930" y="372" width="350" height="78" rx="18" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/><text x="1105" y="404" text-anchor="middle" class="txt">final 确认仍是当前 turn</text><text x="1105" y="430" text-anchor="middle" class="small">只允许一次回答请求</text>
+
+  <text x="72" y="560" class="lane">模型</text>
+  <rect x="930" y="510" width="350" height="82" rx="18" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/><text x="1105" y="544" text-anchor="middle" class="txt">创建 AbortController</text><text x="1105" y="571" text-anchor="middle" class="small">ASR→LLM→TTS 或 Audio LLM</text>
+  <rect x="1280" y="510" width="358" height="82" rx="18" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/><text x="1459" y="544" text-anchor="middle" class="txt">文本 / PCM 分片持续返回</text><text x="1459" y="571" text-anchor="middle" class="small">同一 assistant turnId</text>
+
+  <text x="72" y="700" class="lane">输出</text>
+  <rect x="1280" y="650" width="358" height="82" rx="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/><text x="1459" y="684" text-anchor="middle" class="txt">首个 PCM chunk 即排队播放</text><text x="1459" y="711" text-anchor="middle" class="small">不等待完整 WAV</text>
+
+  <path d="M570 310 L698 310" class="edge"/>
+  <path d="M930 450 L930 510" class="edge"/>
+  <path d="M1280 592 L1280 650" class="edge"/>
+
+  <rect x="250" y="790" width="1388" height="116" rx="22" fill="#fff1f2" stroke="#be123c" stroke-width="2"/>
+  <text x="286" y="832" class="lane" fill="#9f1239">如果用户在 processing / 播放期间再次说话</text>
+  <text x="286" y="870" class="txt">Capture N+1 进入 user_speaking → 旧 capture.cancel() → abort 上游请求 → generation 失效 → 晚到 delta 不再复活旧回答</text>
+</svg>

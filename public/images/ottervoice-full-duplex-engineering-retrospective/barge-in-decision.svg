@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="title desc">
+  <title id="title">两阶段抢话决策树</title>
+  <desc id="desc">助手播放期间检测到疑似插话时先暂停播放，并继续保留麦克风音量与五百毫秒预录。声音消失则恢复播放，声音持续或 ASR 证实文本则确认抢话并取消旧回复。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker>
+    <style>
+      .title{font:700 42px 'Arial Unicode MS',sans-serif;fill:#0f172a}.sub{font:400 21px 'Arial Unicode MS',sans-serif;fill:#475569}
+      .h{font:700 24px 'Arial Unicode MS',sans-serif;fill:#0f172a}.p{font:400 19px 'Arial Unicode MS',sans-serif;fill:#334155}.small{font:400 17px 'Arial Unicode MS',sans-serif;fill:#475569}
+      .edge{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}.yes{stroke:#0f766e}.no{stroke:#c2410c}
+    </style>
+  </defs>
+  <rect width="1600" height="1120" fill="#f8fafc"/>
+  <text x="70" y="72" class="title">抢话：候选不等于确认</text>
+  <text x="70" y="110" class="sub">固定 RMS 阈值无法区分真人、扬声器回声和敲击；先暂停，才能观察声音是否随播放消失</text>
+
+  <rect x="495" y="158" width="610" height="112" rx="24" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+  <text x="800" y="202" text-anchor="middle" class="h">助手正在播放，麦克风持续测量音量</text>
+  <text x="800" y="239" text-anchor="middle" class="p">回声过滤 + 严格 VAD 只产生“疑似插话”</text>
+  <path d="M800 270 L800 342" class="edge"/>
+
+  <polygon points="800,330 1080,470 800,610 520,470" fill="#fff7ed" stroke="#c2410c" stroke-width="3"/>
+  <text x="800" y="446" text-anchor="middle" class="h">残差达到候选门槛？</text>
+  <text x="800" y="482" text-anchor="middle" class="p">可能是真人，也可能是回声或敲击</text>
+  <text x="800" y="516" text-anchor="middle" class="small">短而强的声音不会直接销毁播放</text>
+
+  <path d="M520 470 L304 470 L304 604" class="edge no"/>
+  <text x="398" y="450" class="small">否：继续播放</text>
+  <rect x="92" y="604" width="424" height="128" rx="22" fill="#ecfdf5" stroke="#0f766e" stroke-width="2"/>
+  <text x="304" y="652" text-anchor="middle" class="h">保持 assistant_speaking</text>
+  <text x="304" y="690" text-anchor="middle" class="p">不改变 turn，不清空媒体状态</text>
+
+  <path d="M1080 470 L1264 470 L1264 604" class="edge yes"/>
+  <text x="1120" y="450" class="small">是：进入两阶段确认</text>
+  <rect x="1044" y="604" width="440" height="160" rx="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/>
+  <text x="1264" y="650" text-anchor="middle" class="h">暂停助手播放，但不销毁</text>
+  <text x="1264" y="688" text-anchor="middle" class="p">继续 RMS / ASR；保留约 500ms 预录</text>
+  <text x="1264" y="724" text-anchor="middle" class="small">先忽略扬声器尾音，再观察声音是否持续</text>
+
+  <path d="M1264 764 L1264 828" class="edge"/>
+  <polygon points="1264,812 1485,914 1264,1016 1043,914" fill="#ffffff" stroke="#64748b" stroke-width="3"/>
+  <text x="1264" y="895" text-anchor="middle" class="h">暂停后还有可靠语音？</text>
+  <text x="1264" y="930" text-anchor="middle" class="small">持续人声 / ASR 文本 / 足够 voiced frames</text>
+
+  <path d="M1043 914 L800 914" class="edge no"/>
+  <rect x="412" y="838" width="388" height="152" rx="22" fill="#ecfdf5" stroke="#0f766e" stroke-width="3"/>
+  <text x="606" y="884" text-anchor="middle" class="h">声音消失：误打断</text>
+  <text x="606" y="922" text-anchor="middle" class="p">丢弃扬声器尾音，恢复原位置播放</text>
+  <text x="606" y="958" text-anchor="middle" class="small">进入短暂 cooldown，避免立即再次候选</text>
+
+  <path d="M1264 1016 L1264 1060 L920 1060" class="edge yes"/>
+  <rect x="144" y="1008" width="776" height="88" rx="22" fill="#fff1f2" stroke="#be123c" stroke-width="3"/>
+  <text x="532" y="1044" text-anchor="middle" class="h">声音持续：确认抢话</text>
+  <text x="532" y="1076" text-anchor="middle" class="p">先切 user_speaking → 回放预录 → 取消旧回复 → 继续当前用户 turn</text>
+</svg>
