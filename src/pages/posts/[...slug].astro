@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { parseTitle } from '../../utils/parseTitle';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -13,6 +14,7 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const { isAI, displayTitle } = parseTitle(post.data.title);
 
 const fmt = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
@@ -20,9 +22,20 @@ const fmt = (d: Date) =>
   ).padStart(2, '0')}`;
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
+<BaseLayout title={displayTitle} description={post.data.description}>
   <article>
-    <h1>{post.data.title}</h1>
+    <h1>
+      {isAI && (
+        <span
+          class="title-badge title-badge--ai"
+          title="主要由 AI 撰写"
+          aria-label="主要由 AI 撰写"
+        >
+          AI
+        </span>
+      )}
+      {displayTitle}
+    </h1>
     <p class="post-meta">发布于 {fmt(post.data.date)}</p>
     <Content />
   </article>

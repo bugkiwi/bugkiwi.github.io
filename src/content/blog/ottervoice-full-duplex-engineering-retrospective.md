@@ -1,5 +1,5 @@
 ---
-title: "从一次性问答到全双工：OtterVoice 的三层架构与故障边界"
+title: "[AI] 从一次性问答到全双工：OtterVoice 的三层架构与故障边界"
 date: 2026-07-14
 description: "从轮次生命周期、抢话和媒体流边界出发，复盘 OtterVoice 如何从手动语音 Demo 演进为跨平台全双工 SDK。"
 tags: [语音交互, 全双工, TypeScript, Web Audio, SDK, ]

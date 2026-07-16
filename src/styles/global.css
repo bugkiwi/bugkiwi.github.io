@@ -209,6 +209,39 @@ a:hover {
   margin: 2px 0 0 22px;
 }
 
+/* ---------- Title badges（如 [AI] → 烙印标记） ---------- */
+.title-badge {
+  display: inline-block;
+  margin-right: 0.45em;
+  line-height: 1;
+  vertical-align: 0.12em;
+  text-decoration: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.title-badge--ai {
+  font-family: var(--font-display);
+  font-size: 0.55em;
+  letter-spacing: 0.12em;
+  padding: 0.18em 0.38em 0.1em;
+  color: var(--accent);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--accent) 18%, transparent);
+  transform: rotate(-3deg);
+}
+
+.post-list a .title-badge--ai {
+  font-size: 0.68em;
+  vertical-align: 0.18em;
+}
+
+article h1 .title-badge--ai {
+  vertical-align: 0.28em;
+}
+
 /* ---------- Article ---------- */
 .post-meta {
   color: var(--muted);
