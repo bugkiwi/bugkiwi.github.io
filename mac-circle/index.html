@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="description" content="用 Mac 触控板一笔画圆，测试你的手到底有多稳。" />
+  <meta property="og:title" content="Mac 画圆鉴定" />
+  <meta property="og:description" content="一笔画圆，让 Mac 判断你是人肉 CAD，还是自由曲线生命体。" />
+  <meta property="og:type" content="website" />
+  <title>Mac 画圆鉴定</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b10;
+      --panel: #10131a;
+      --panel-2: #171b24;
+      --text: #f5f7fb;
+      --muted: #9098a7;
+      --border: rgba(255,255,255,.1);
+      --accent: #ff4d67;
+      --accent-2: #ffbd2e;
+      --shadow: 0 24px 80px rgba(0,0,0,.45);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
+    body {
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255,77,103,.16), transparent 34rem),
+        radial-gradient(circle at 85% 16%, rgba(255,189,46,.10), transparent 28rem),
+        var(--bg);
+    }
+    button { font: inherit; }
+    .shell { width: min(960px, 100%); margin: 0 auto; padding: 28px 18px 56px; }
+    .topbar { display: flex; justify-content: space-between; gap: 20px; align-items: start; margin-bottom: 20px; }
+    .eyebrow { color: var(--accent); font-size: 13px; letter-spacing: .12em; font-weight: 800; }
+    h1 { margin: 7px 0 8px; font-size: clamp(32px, 6vw, 64px); line-height: .98; letter-spacing: -.055em; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.6; max-width: 600px; }
+    .brand { color: var(--muted); font-size: 13px; white-space: nowrap; padding-top: 7px; }
+
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+    .metric { border: 1px solid var(--border); background: rgba(16,19,26,.8); border-radius: 16px; padding: 14px 15px; backdrop-filter: blur(18px); }
+    .metric-label { color: var(--muted); font-size: 12px; }
+    .metric-value { margin-top: 5px; font-size: 25px; font-weight: 850; letter-spacing: -.04em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .metric-value.small { font-size: 16px; letter-spacing: -.02em; }
+
+    .arena-wrap { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 24px; background: rgba(16,19,26,.86); box-shadow: var(--shadow); }
+    #canvas { display: block; width: 100%; height: min(58vh, 540px); min-height: 390px; touch-action: none; cursor: crosshair; }
+    .arena-head { position: absolute; z-index: 3; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+    .pill { border: 1px solid var(--border); border-radius: 999px; padding: 8px 11px; background: rgba(9,11,16,.72); backdrop-filter: blur(12px); color: var(--muted); font-size: 12px; }
+    .pill.hot { color: #fff; border-color: rgba(255,77,103,.36); background: rgba(255,77,103,.18); }
+    .intro { position: absolute; inset: 0; display: grid; place-items: center; padding: 40px 22px; text-align: center; pointer-events: none; transition: opacity .2s ease; }
+    .intro.hidden { opacity: 0; }
+    .intro-icon { font-size: 68px; filter: drop-shadow(0 16px 24px rgba(0,0,0,.3)); }
+    .intro h2 { margin: 12px 0 8px; font-size: clamp(24px, 5vw, 38px); letter-spacing: -.04em; }
+    .intro p { margin: 0; color: var(--muted); line-height: 1.65; }
+    .intro .tip { margin-top: 14px; font-size: 13px; }
+    .center-dot { position: absolute; pointer-events: none; width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.45); left: 50%; top: 50%; transform: translate(-50%,-50%); box-shadow: 0 0 0 8px rgba(255,255,255,.04); }
+    .taunt { position: absolute; z-index: 4; left: 50%; bottom: 18px; transform: translateX(-50%); max-width: calc(100% - 36px); padding: 10px 15px; border: 1px solid var(--border); background: rgba(9,11,16,.85); backdrop-filter: blur(14px); border-radius: 14px; font-weight: 750; text-align: center; opacity: 0; transition: opacity .16s, transform .16s; pointer-events: none; }
+    .taunt.show { opacity: 1; transform: translateX(-50%) translateY(-3px); }
+
+    .result { display: none; margin-top: 14px; }
+    .result.show { display: block; }
+    .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .result-card { margin-top: 10px; border: 1px solid var(--border); background: rgba(16,19,26,.86); border-radius: 20px; padding: 19px; display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; }
+    .result-emoji { font-size: 46px; line-height: 1; }
+    .result-label { color: var(--muted); font-size: 12px; }
+    .result-title { margin-top: 4px; font-size: 25px; font-weight: 900; letter-spacing: -.04em; }
+    .result-desc { margin: 8px 0 0; color: var(--muted); line-height: 1.6; }
+    .share-copy { margin-top: 10px; border: 1px dashed rgba(255,255,255,.18); border-radius: 16px; padding: 15px; color: #dce1eb; line-height: 1.55; }
+    .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+    .btn { border: 1px solid var(--border); border-radius: 14px; padding: 13px 14px; color: var(--text); background: var(--panel-2); cursor: pointer; font-weight: 800; transition: transform .12s ease, border-color .12s ease, background .12s ease; }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.22); }
+    .btn.primary { border-color: transparent; background: linear-gradient(135deg, var(--accent), #ff7a4d); color: #fff; }
+    .foot { margin-top: 15px; text-align: center; color: var(--muted); font-size: 12px; }
+    .toast { position: fixed; z-index: 10; left: 50%; bottom: 26px; transform: translate(-50%, 16px); padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; background: rgba(16,19,26,.95); opacity: 0; pointer-events: none; transition: .18s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 680px) {
+      .shell { padding: 20px 12px 40px; }
+      .topbar { display: block; }
+      .brand { margin-top: 10px; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+      .metrics .metric:last-child { grid-column: 1 / -1; }
+      .score-grid { grid-template-columns: 1fr 1fr; }
+      .actions { grid-template-columns: 1fr; }
+      #canvas { min-height: 430px; height: 60vh; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">MAC TRACKPAD TEST</div>
+        <h1>一笔画圆。</h1>
+        <p class="subtitle">不要辅助线，不准重来。让 Mac 判断你的手是精密仪器，还是自由曲线生命体。</p>
+      </div>
+      <div class="brand">@gkiwi</div>
+    </header>
+
+    <section class="metrics" aria-label="实时数据">
+      <div class="metric"><div class="metric-label">实时圆度</div><div id="liveScore" class="metric-value">—</div></div>
+      <div class="metric"><div class="metric-label">采样轨迹</div><div id="pointCount" class="metric-value">0</div></div>
+      <div class="metric"><div class="metric-label">Mac 评价</div><div id="miniTaunt" class="metric-value small">尚未开骂</div></div>
+    </section>
+
+    <section class="arena-wrap">
+      <canvas id="canvas" aria-label="按住并拖动画圆"></canvas>
+      <div class="center-dot" aria-hidden="true"></div>
+      <div class="arena-head">
+        <span id="status" class="pill hot">等待落笔</span>
+        <span id="timer" class="pill">0.0 秒</span>
+      </div>
+      <div id="intro" class="intro">
+        <div>
+          <div class="intro-icon">⭕</div>
+          <h2>按住，围着中心画一圈</h2>
+          <p>松手即交卷。轨迹不会被修正。</p>
+          <p class="tip">建议使用触控板；鼠标更稳，但更没有灵魂。</p>
+        </div>
+      </div>
+      <div id="taunt" class="taunt">Mac 正在观察你</div>
+    </section>
+
+    <section id="result" class="result" aria-live="polite">
+      <div class="score-grid">
+        <div class="metric"><div class="metric-label">最终圆度</div><div id="finalScore" class="metric-value">0</div></div>
+        <div class="metric"><div class="metric-label">闭合程度</div><div id="closureScore" class="metric-value">0</div></div>
+        <div class="metric"><div class="metric-label">平滑程度</div><div id="smoothScore" class="metric-value">0</div></div>
+        <div class="metric"><div class="metric-label">完成用时</div><div id="durationScore" class="metric-value">0.0s</div></div>
+      </div>
+
+      <div class="result-card">
+        <div id="rankEmoji" class="result-emoji">🥔</div>
+        <div>
+          <div class="result-label">你的触控板人格</div>
+          <div id="rankTitle" class="result-title">土豆雕刻师</div>
+          <p id="rankDesc" class="result-desc"></p>
+          <div id="shareCopy" class="share-copy"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="retryBtn" class="btn" type="button">再画一次</button>
+        <button id="copyBtn" class="btn" type="button">复制战绩</button>
+        <button id="saveBtn" class="btn primary" type="button">保存战绩图</button>
+      </div>
+    </section>
+
+    <div class="foot">所有计算均在浏览器本地完成，不上传轨迹。</div>
+  </main>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    (() => {
+      const canvas = document.querySelector('#canvas');
+      const ctx = canvas.getContext('2d');
+      const intro = document.querySelector('#intro');
+      const liveScore = document.querySelector('#liveScore');
+      const pointCount = document.querySelector('#pointCount');
+      const miniTaunt = document.querySelector('#miniTaunt');
+      const status = document.querySelector('#status');
+      const timer = document.querySelector('#timer');
+      const taunt = document.querySelector('#taunt');
+      const result = document.querySelector('#result');
+      const toast = document.querySelector('#toast');
+
+      let points = [];
+      let drawing = false;
+      let startTime = 0;
+      let endTime = 0;
+      let timerId = 0;
+      let lastTauntAt = 0;
+      let resultData = null;
+      let toastTimer = 0;
+
+      const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+      function showToast(text) {
+        toast.textContent = text;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+      }
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        redraw();
+      }
+
+      function redraw() {
+        ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+        if (points.length < 2) return;
+        const gradient = ctx.createLinearGradient(0, 0, canvas.clientWidth, canvas.clientHeight);
+        gradient.addColorStop(0, css('--accent'));
+        gradient.addColorStop(1, css('--accent-2'));
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+        ctx.stroke();
+      }
+
+      function analyze(input, partial = false) {
+        if (input.length < 12) return null;
+        const cx = input.reduce((s, p) => s + p.x, 0) / input.length;
+        const cy = input.reduce((s, p) => s + p.y, 0) / input.length;
+        const radii = input.map(p => Math.hypot(p.x - cx, p.y - cy));
+        const meanRadius = radii.reduce((a, b) => a + b, 0) / radii.length;
+        const variance = radii.reduce((s, r) => s + (r - meanRadius) ** 2, 0) / radii.length;
+        const radialDeviation = Math.sqrt(variance) / Math.max(meanRadius, 1);
+        const roundness = clamp(100 - radialDeviation * 330);
+        const closure = clamp(100 - distance(input[0], input[input.length - 1]) / Math.max(meanRadius * 2, 1) * 140);
+
+        let angularTravel = 0;
+        let prev = Math.atan2(input[0].y - cy, input[0].x - cx);
+        for (let i = 1; i < input.length; i++) {
+          const angle = Math.atan2(input[i].y - cy, input[i].x - cx);
+          let delta = angle - prev;
+          while (delta > Math.PI) delta -= Math.PI * 2;
+          while (delta < -Math.PI) delta += Math.PI * 2;
+          angularTravel += delta;
+          prev = angle;
+        }
+        const turns = Math.abs(angularTravel) / (Math.PI * 2);
+        const coverage = clamp(100 - Math.abs(1 - turns) * 125);
+
+        let jitter = 0;
+        for (let i = 1; i < radii.length; i++) jitter += Math.abs(radii[i] - radii[i - 1]);
+        jitter /= Math.max(radii.length - 1, 1);
+        const smoothness = clamp(100 - jitter / Math.max(meanRadius, 1) * 620);
+
+        let score = partial
+          ? roundness * .72 + smoothness * .28
+          : roundness * .5 + closure * .22 + coverage * .18 + smoothness * .1;
+        if (meanRadius < 35) score *= .65;
+        if (turns < .55) score *= .55;
+        if (turns > 1.65) score *= .78;
+
+        return {
+          score: Math.round(clamp(score, 0, 99)),
+          roundness: Math.round(roundness),
+          closure: Math.round(closure),
+          coverage: Math.round(coverage),
+          smoothness: Math.round(smoothness),
+          radius: meanRadius,
+          turns
+        };
+      }
+
+      function clamp(n, min = 0, max = 100) { return Math.max(min, Math.min(max, n)); }
+
+      function showTaunt(text) {
+        taunt.textContent = text;
+        taunt.classList.add('show');
+        miniTaunt.textContent = text;
+      }
+
+      function liveTaunt(data) {
+        if (data.score >= 92) return '等等，你是不是开了 CAD？';
+        if (data.score >= 82) return '有点圆，先别骄傲';
+        if (data.turns > 1.32) return '画圆，不是点蚊香';
+        if (data.radius < 45) return '这么小，怕被人看见？';
+        if (data.score >= 66) return '像圆，也像一颗馒头';
+        if (data.score >= 48) return 'Mac 正在努力理解你';
+        return '这是一颗受过伤的土豆';
+      }
+
+      function getPoint(e) {
+        const rect = canvas.getBoundingClientRect();
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top, pressure: e.pressure || 0, t: performance.now() };
+      }
+
+      function begin(e) {
+        if (drawing) return;
+        e.preventDefault();
+        points = [getPoint(e)];
+        drawing = true;
+        resultData = null;
+        startTime = performance.now();
+        intro.classList.add('hidden');
+        result.classList.remove('show');
+        status.textContent = '正在作案';
+        liveScore.textContent = '0';
+        pointCount.textContent = '1';
+        miniTaunt.textContent = 'Mac 正在观察';
+        taunt.classList.remove('show');
+        canvas.setPointerCapture?.(e.pointerId);
+        clearInterval(timerId);
+        timerId = setInterval(() => timer.textContent = `${((performance.now() - startTime) / 1000).toFixed(1)} 秒`, 50);
+        redraw();
+      }
+
+      function move(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const p = getPoint(e);
+        const prev = points[points.length - 1];
+        if (distance(prev, p) < 2) return;
+        points.push(p);
+        redraw();
+        pointCount.textContent = points.length;
+        const data = analyze(points, true);
+        if (!data) return;
+        liveScore.textContent = data.score;
+        const now = performance.now();
+        if (now - lastTauntAt > 620) {
+          showTaunt(liveTaunt(data));
+          lastTauntAt = now;
+        }
+      }
+
+      function end(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        drawing = false;
+        endTime = performance.now();
+        clearInterval(timerId);
+        if (points.length < 20) {
+          status.textContent = '无效作答';
+          showTaunt('你只是划了一下，不算画圆');
+          setTimeout(reset, 1200);
+          return;
+        }
+        finish();
+      }
+
+      function classify(data, duration) {
+        if (data.score >= 94) return ['📐', '人肉 CAD', '你的手不是手，是某种精密工业设备。'];
+        if (data.score >= 86 && duration < 1.8) return ['⚡', '触控板闪电侠', '画得又快又圆，Mac 怀疑你私下练过。'];
+        if (data.score >= 82) return ['🧑‍🎨', '克制型设计师', '你知道什么叫留白，也知道什么叫强迫症。'];
+        if (data.turns > 1.45) return ['🌀', '蚊香继承人', '别人画一个圆，你顺手申请了一个漩涡。'];
+        if (data.closure < 35 && data.roundness > 65) return ['🚪', '永不闭环的人', '过程很漂亮，结尾依旧选择了逃避。'];
+        if (data.smoothness < 38) return ['🌋', '地震带艺术家', '每一个抖动，都记录了你内心的不确定。'];
+        if (data.radius < 55) return ['🔬', '显微镜派圆学家', '你画的不是小，是对空间非常节省。'];
+        if (data.score >= 65) return ['🥯', '贝果工程师', '严格来说不够圆，但已经可以拿去卖早餐。'];
+        if (data.score >= 45) return ['🥔', '土豆雕刻师', '它有自己的想法，只是那个想法和圆无关。'];
+        return ['🦠', '自由曲线生命体', '科学尚未给这种形状正式命名。'];
+      }
+
+      function finish() {
+        const data = analyze(points, false);
+        const duration = (endTime - startTime) / 1000;
+        const [emoji, title, desc] = classify(data, duration);
+        resultData = { ...data, duration, emoji, title, desc };
+        status.textContent = '鉴定完成';
+        timer.textContent = `${duration.toFixed(1)} 秒`;
+        liveScore.textContent = data.score;
+        showTaunt(data.score >= 85 ? '这次我闭嘴' : '证据已保存');
+        document.querySelector('#finalScore').textContent = data.score;
+        document.querySelector('#closureScore').textContent = data.closure;
+        document.querySelector('#smoothScore').textContent = data.smoothness;
+        document.querySelector('#durationScore').textContent = `${duration.toFixed(1)}s`;
+        document.querySelector('#rankEmoji').textContent = emoji;
+        document.querySelector('#rankTitle').textContent = title;
+        document.querySelector('#rankDesc').textContent = desc;
+        document.querySelector('#shareCopy').textContent = shareText();
+        result.classList.add('show');
+        setTimeout(() => result.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120);
+      }
+
+      function shareText() {
+        return `我用 Mac 触控板一笔画圆，圆度 ${resultData.score}，被鉴定为「${resultData.title}」。你能比我更圆吗？`;
+      }
+
+      function reset() {
+        drawing = false;
+        points = [];
+        resultData = null;
+        clearInterval(timerId);
+        intro.classList.remove('hidden');
+        result.classList.remove('show');
+        taunt.classList.remove('show');
+        status.textContent = '等待落笔';
+        timer.textContent = '0.0 秒';
+        liveScore.textContent = '—';
+        pointCount.textContent = '0';
+        miniTaunt.textContent = '尚未开骂';
+        redraw();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      async function copyResult() {
+        if (!resultData) return;
+        const text = `${shareText()} ${location.href}`;
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast('战绩已复制');
+        } catch {
+          const area = document.createElement('textarea');
+          area.value = text;
+          document.body.append(area);
+          area.select();
+          document.execCommand('copy');
+          area.remove();
+          showToast('战绩已复制');
+        }
+      }
+
+      function saveCard() {
+        if (!resultData) return;
+        const out = document.createElement('canvas');
+        out.width = 1080;
+        out.height = 1350;
+        const o = out.getContext('2d');
+        o.fillStyle = '#090b10';
+        o.fillRect(0, 0, out.width, out.height);
+
+        const g = o.createRadialGradient(150, 80, 0, 150, 80, 700);
+        g.addColorStop(0, 'rgba(255,77,103,.26)');
+        g.addColorStop(1, 'rgba(9,11,16,0)');
+        o.fillStyle = g;
+        o.fillRect(0, 0, 1080, 1350);
+
+        o.fillStyle = '#ff4d67';
+        o.font = '800 28px -apple-system, BlinkMacSystemFont, sans-serif';
+        o.fillText('MAC TRACKPAD TEST', 72, 86);
+        o.fillStyle = '#f5f7fb';
+        o.font = '900 112px -apple-system, BlinkMacSystemFont, sans-serif';
+        o.fillText(`${resultData.score} 分`, 68, 214);
+        o.font = '900 52px -apple-system, BlinkMacSystemFont, sans-serif';
+        o.fillText(`${resultData.emoji} ${resultData.title}`, 72, 294);
+
+        const xs = points.map(p => p.x), ys = points.map(p => p.y);
+        const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+        const sourceW = Math.max(maxX - minX, 1), sourceH = Math.max(maxY - minY, 1);
+        const scale = Math.min(740 / sourceW, 680 / sourceH);
+        const ox = 540 - ((minX + maxX) / 2) * scale;
+        const oy = 700 - ((minY + maxY) / 2) * scale;
+
+        const lineGradient = o.createLinearGradient(180, 400, 900, 980);
+        lineGradient.addColorStop(0, '#ff4d67');
+        lineGradient.addColorStop(1, '#ffbd2e');
+        o.strokeStyle = lineGradient;
+        o.lineWidth = 18;
+        o.lineCap = 'round';
+        o.lineJoin = 'round';
+        o.beginPath();
+        o.moveTo(points[0].x * scale + ox, points[0].y * scale + oy);
+        for (let i = 1; i < points.length; i++) o.lineTo(points[i].x * scale + ox, points[i].y * scale + oy);
+        o.stroke();
+
+        o.fillStyle = '#9098a7';
+        o.font = '500 30px -apple-system, BlinkMacSystemFont, sans-serif';
+        o.fillText(`闭合 ${resultData.closure}  ·  平滑 ${resultData.smoothness}  ·  ${resultData.duration.toFixed(1)} 秒`, 72, 1200);
+        o.fillText('一笔画圆，你能比我更圆吗？', 72, 1260);
+        o.fillStyle = '#f5f7fb';
+        o.font = '800 26px -apple-system, BlinkMacSystemFont, sans-serif';
+        o.fillText('@gkiwi', 72, 1308);
+
+        const link = document.createElement('a');
+        link.download = `mac-circle-${resultData.score}.png`;
+        link.href = out.toDataURL('image/png');
+        link.click();
+        showToast('战绩图已生成');
+      }
+
+      canvas.addEventListener('pointerdown', begin);
+      canvas.addEventListener('pointermove', move);
+      canvas.addEventListener('pointerup', end);
+      canvas.addEventListener('pointercancel', end);
+      document.querySelector('#retryBtn').addEventListener('click', reset);
+      document.querySelector('#copyBtn').addEventListener('click', copyResult);
+      document.querySelector('#saveBtn').addEventListener('click', saveCard);
+      window.addEventListener('resize', resize);
+      resize();
+    })();
+  </script>
+</body>
+</html>
