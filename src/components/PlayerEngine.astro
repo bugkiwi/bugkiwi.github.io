@@ -21,6 +21,7 @@
       this.dataset.ready = '1';
 
       this.audio = this.querySelector('.gp-audio');
+      this.audio.loop = true; // 默认单曲循环
       this.track = null;
 
       this.audio.addEventListener('play', () => this.broadcast());
