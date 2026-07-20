@@ -25,6 +25,10 @@ jobs:
           bun-version: latest
       - run: bun install --frozen-lockfile
       - run: bun run build
+      - name: Copy standalone games into Astro output
+        run: |
+          mkdir -p dist/mac-circle
+          cp mac-circle/index.html dist/mac-circle/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
